@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8" />
+    <style>
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 2px solid #ddd;
+            font-family: Arial, sans-serif;
+            margin-top: 30px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <button onclick="getData('A')">Get Data A</button>
+    <button onclick="getData('B')">Get Data B</button>
+    <table id="csv">
+        <tbody></tbody>
+    </table>
+    <script type="text/javascript">
+        function getData (type) {
+            var tbody = document.querySelector('#csv tbody');
+            tbody.innerHTML = '';
+            var data = [];
+            if (type == 'A') {
+                fetch('https://tradingtimeline.com/get-data.php?name=Trials').then(response => response.json()).then(sheet => {
+                    sheet.values.forEach(function (cell) {
+                        // Edit the data as needed
+                        var link = cell[2].trim();
+                        var links = link.split('/');
+                        var nct = links[links.length - 1];
+                        var fdaDesignation = cell[9].trim();
+                        if (fdaDesignation == 'None') {
+                            fdaDesignation = 'None';
+                        }
+                        var platform = cell[10].trim();
+                        if (platform.includes('Immunocytokine')) {
+                            if (typeof cell[11] == 'undefined') {
+                                partnerCompanies = null;
+                            } else {
+                                partnerCompanies = cell[11].trim();
+                            }
+                            // Now push the edited data to the final output in the right order.
+                            // The first item pushed to the array is the root node or parent. For a sunburst chart, it would be the center. 
+                            // Then next item pushed to the array is the first ring on the sunburst chart. Etc. 
+                            data.push({
+                                platform: cell[10].trim(),
+                                ibrxDrug: cell[6].trim(),
+                                partnerDrug: cell[7].trim(),
+                                indication: cell[0].trim(),
+                                phase: cell[5].trim(),
+                                fdaDesignation: fdaDesignation,
+                                nct: '<a href="' + link + '">' + nct + '</a>'
+                            });
+                        }
+                    });
+                    // Sort the cells in each row and create a hierarchy to graph. 
+                    // This is needed because there may be A1, A2, A1, A3, A1. We need A1, A1, A1, A2, A3.
+                    data.sort(function (a, b) {
+                        return a.platform.localeCompare(b.platform) 
+                        || a.ibrxDrug.localeCompare(b.ibrxDrug) 
+                        || a.partnerDrug.localeCompare(b.partnerDrug) 
+                        || a.indication.localeCompare(b.indication)
+                        || a.phase.localeCompare(b.phase) 
+                        || a.nct.localeCompare(b.nct) 
+                        || a.fdaDesignation.localeCompare(b.fdaDesignation);
+                    });
+                    var csv = [];
+                    data.forEach(function (item) {
+                        csv.push(Object.values(item).join(','));
+                        var row = document.createElement('tr');
+                        row.innerHTML = '<td>' + Object.values(item).join(',') + '</td>';
+                        tbody.appendChild(row);
+                    });
+                    console.log(csv);
+                });
+            } else if (type == 'B') {
+                fetch('https://tradingtimeline.com/get-data.php?name=Trials').then(response => response.json()).then(sheet => {
+                    sheet.values.forEach(function (cell) {
+                        // Edit the data as needed
+                        var link = cell[2].trim();
+                        var links = link.split('/');
+                        var nct = links[links.length - 1];
+                        var fdaDesignation = cell[9].trim();
+                        if (fdaDesignation == 'None') {
+                            fdaDesignation = 'None';
+                        }
+                        var platform = cell[10].trim();
+                        if (platform.includes('Immunocytokine')) {
+                            if (typeof cell[11] == 'undefined') {
+                                partnerCompanies = null;
+                            } else {
+                                partnerCompanies = cell[11].trim();
+                            }
+                            // Now push the edited data to the final output in the right order.
+                            // The first item pushed to the array is the root node or parent. For a sunburst chart, it would be the center. 
+                            // Then next item pushed to the array is the first ring on the sunburst chart. Etc. 
+                            data.push({
+                                platform: cell[10].trim(),
+                                ibrxDrug: cell[6].trim(),
+                                partnerDrug: cell[7].trim(),
+                                indication: cell[0].trim(),
+                                nct: '<a href="' + link + '">' + nct + '</a>'
+                            });
+                        }
+                    });
+                    // Sort the cells in each row and create a hierarchy to graph. 
+                    // This is needed because there may be A1, A2, A1, A3, A1. We need A1, A1, A1, A2, A3.
+                    data.sort(function (a, b) {
+                        return a.platform.localeCompare(b.platform) || a.ibrxDrug.localeCompare(b.ibrxDrug) || a.partnerDrug.localeCompare(b.partnerDrug) || a.indication.localeCompare(b.indication);
+                    });
+                    var csv = [];
+                    data.forEach(function (item) {
+                        csv.push(Object.values(item).join(','));
+                        var row = document.createElement('tr');
+                        row.innerHTML = '<td>' + Object.values(item).join(',') + '</td>';
+                        tbody.appendChild(row);
+                    });
+                    console.log(csv);
+                });
+            }
+        }
+    </script>
+</body>

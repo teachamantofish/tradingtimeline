@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load('current', {'packages':['gauge']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+
+        var data = google.visualization.arrayToDataTable([
+          ['Label', 'Value'],
+          ['Short squeeze', 30],
+          ['Gamma squeeze', 55],
+          ['Network', 36]
+        ]);
+
+        var options = {
+          width: 500, height: 149,
+          redFrom: 90, redTo: 100,
+          yellowFrom:75, yellowTo: 90,
+          minorTicks: 5
+        };
+
+        var chart = new google.visualization.Gauge(document.getElementById('chart_div'));
+
+        chart.draw(data, options);
+
+        setInterval(function() {
+          var oldValue = data.getValue(0, 1);
+          var newValue = oldValue + Math.floor(Math.random() * 3) - 1;
+          data.setValue(0, 1, newValue);
+          chart.draw(data, options);
+        }, 1000);
+        setInterval(function() {
+          var oldValue = data.getValue(1, 1);
+          var newValue = oldValue + Math.floor(Math.random() * 3) - 1;
+          data.setValue(1, 1, newValue);
+          chart.draw(data, options);
+        }, 1000);
+        setInterval(function() {
+          chart.draw(data, options);
+        }, 1000);
+      }
+    </script>
+  </head>
+  <body>
+    <div id="chart_div" style="width: 500px; height: 149px;"></div>
+  </body>
+</html>
